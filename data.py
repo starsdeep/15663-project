@@ -58,7 +58,6 @@ class SonyDataset(Dataset):
         if self.input_images[str(ratio)[0:3]][ind] is None:
             raw = rawpy.imread(in_path)
             self.input_images[str(ratio)[0:3]][ind] = np.expand_dims(pack_raw(raw), axis=0) * ratio
-
             gt_raw = rawpy.imread(gt_path)
             im = gt_raw.postprocess(use_camera_wb=True, half_size=False, no_auto_bright=True, output_bps=16)
             self.gt_images[ind] = np.expand_dims(np.float32(im / 65535.0), axis=0)

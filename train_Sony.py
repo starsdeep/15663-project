@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim as optim
 from models import Unet
+from datetime import datetime
 
 def train(args):
     # device
@@ -19,7 +20,7 @@ def train(args):
 
     # data
     trainset = SonyDataset(args.input_dir, args.gt_dir, args.ps)
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=20)
     logging.info("data loading okay")
 
     # model
@@ -55,8 +56,8 @@ def train(args):
             # print statistics
             running_loss += loss.item()
             if i % args.log_interval == (args.log_interval - 1):  # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                      (epoch, i, running_loss / args.log_interval))
+                print('[%d, %5d] loss: %.3f %s' %
+                      (epoch, i, running_loss / args.log_interval, datetime.now()))
                 running_loss = 0.0
 
             if epoch % args.save_freq == 0:
