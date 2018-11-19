@@ -11,6 +11,7 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim as optim
+from models import Unet
 
 def train(args):
     # device
@@ -97,8 +98,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Create Output Dir
-    if not os.path.exists(args.output):
-        os.makedirs(args.output)
+    if not os.path.exists(args.result_dir):
+        os.makedirs(args.result_dir)
+
+    if not os.path.exists(args.checkpoint_dir):
+        os.makedirs(args.checkpoint_dir)
 
     # Set Logger
     logging.basicConfig(level=logging.DEBUG,
