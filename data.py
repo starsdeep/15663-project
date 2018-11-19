@@ -47,7 +47,7 @@ class SonyDataset(Dataset):
         in_path = in_files[np.random.random_integers(0, len(in_files) - 1)]
         in_fn = os.path.basename(in_path)
 
-        gt_files = glob.glob(gt_dir + '%05d_00*.ARW' % train_id)
+        gt_files = glob.glob(self.gt_dir + '%05d_00*.ARW' % train_id)
         gt_path = gt_files[0]
         gt_fn = os.path.basename(gt_path)
 
@@ -74,20 +74,28 @@ class SonyDataset(Dataset):
         # data augmentation
         # random flip vertically
         if np.random.randint(2, size=1)[0] == 1:
-            input_patch = np.flip(input_patch, axis=1)
-            gt_patch = np.flip(gt_patch, axis=1)
+            input_patch = np.flip(input_patch, axis=1).copy()
+            gt_patch = np.flip(gt_patch, axis=1).copy()
         # random flip horizontally
         if np.random.randint(2, size=1)[0] == 1:
-            input_patch = np.flip(input_patch, axis=2)
-            gt_patch = np.flip(gt_patch, axis=2)
+            input_patch = np.flip(input_patch, axis=2).copy()
+            gt_patch = np.flip(gt_patch, axis=2).copy()
         # random transpose
         if np.random.randint(2, size=1)[0] == 1:
-            input_patch = np.transpose(input_patch, (0, 2, 1, 3))
-            gt_patch = np.transpose(gt_patch, (0, 2, 1, 3))
+            input_patch = np.transpose(input_patch, (0, 2, 1, 3)).copy()
+            gt_patch = np.transpose(gt_patch, (0, 2, 1, 3)).copy()
 
         input_patch = np.minimum(input_patch, 1.0)
 
-        return torch.from_numpy(input_patch), torch.from_numpy(gt_patch), train_id, ratio
+        input_patch = torch.from_numpy(input_patch)
+        input_patch = torch.squeeze(input_patch)
+        input_patch = input_patch.permute(2, 0 ,1)
+        
+        gt_patch = torch.from_numpy(gt_patch)
+        gt_patch = torch.squeeze(gt_patch)
+        gt_patch = gt_patch.permute(2, 0, 1)
+        
+        return input_patch, gt_patch, train_id, ratio
 
 
 

@@ -36,7 +36,7 @@ class Up(nn.Module):
 
     def __init__(self, in_ch, out_ch):
         super().__init__()
-        self.upsample = nn.ConvTranspose2d(in_ch//2, in_ch//2, 2, stride=2)
+        self.upsample = nn.ConvTranspose2d(in_ch, in_ch//2, 2, stride=2)
         self.conv = DoubleConv(in_ch, out_ch)
 
     def forward(self, x1, x2):
@@ -86,10 +86,10 @@ class Unet(nn.Module):
         self.d3 = Down(128, 256)
         self.d4 = Down(256, 512)
 
-        self.u1 = Up(1024, 256)
-        self.u2 = Up(512, 128)
-        self.u3 = Up(256, 64)
-        self.u4 = Up(128, 32)
+        self.u1 = Up(512, 256)
+        self.u2 = Up(256, 128)
+        self.u3 = Up(128, 64)
+        self.u4 = Up(64, 32)
         self.outc = outconv(32, 12)
         self.d2s = DepthToSpace(2)
 
@@ -99,7 +99,6 @@ class Unet(nn.Module):
         x3 = self.d2(x2)
         x4 = self.d3(x3)
         x5 = self.d4(x4)
-
         x = self.u1(x5, x4)
         x = self.u2(x, x3)
         x = self.u3(x, x2)

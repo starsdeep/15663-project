@@ -19,7 +19,7 @@ def train(args):
 
     # data
     trainset = SonyDataset(args.input_dir, args.gt_dir, args.ps)
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=4)
+    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=8, pin_memory=True)
     logging.info("data loading okay")
 
     # model
@@ -35,7 +35,7 @@ def train(args):
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.1)
 
     # training
-    running_loss = total = correct = 0.0
+    running_loss = 0.0
     for epoch in range(args.num_epoch):
         scheduler.step()
         for i, databatch in enumerate(train_loader):
@@ -52,23 +52,19 @@ def train(args):
             loss.backward()
             optimizer.step()
 
-            # running acc
-            _, predicted = torch.max(outputs.data, 1)
-            total += gt_patch.size(0)
-            correct += (predicted == gt_patch).sum().item()
-
             # print statistics
             running_loss += loss.item()
             if i % args.log_interval == (args.log_interval - 1):  # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f, acc %.3f' %
-                      (epoch, i, running_loss / args.log_interval, correct*1.0/total))
-                total = correct = running_loss = 0.0
+                print('[%d, %5d] loss: %.3f' %
+                      (epoch, i, running_loss / args.log_interval))
+                running_loss = 0.0
 
             if epoch % args.save_freq == 0:
                 if not os.path.isdir(args.result_dir + '%04d' % epoch):
                     os.makedirs(args.result_dir + '%04d' % epoch)
-
-                outputs = outputs.cpu().numpy()
+                
+                gt_patch = gt_patch.cpu().detach().numpy()
+                outputs = outputs.cpu().detach().numpy()
                 train_id = train_id.numpy()
                 ratio = ratio.numpy()
 
@@ -89,6 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint_dir', type=str, default='./result_Sony/')
     parser.add_argument('--result_dir', type=str, default='./result_Sony/')
     parser.add_argument('--ps', type=int, default=512)
+    parser.add_argument('--log_interval', type=int, default=10)
     parser.add_argument('--save_freq', type=int, default=500)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--wd', type=float, default=0)
@@ -107,7 +104,7 @@ if __name__ == '__main__':
     # Set Logger
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(message)s',
-                        filename=os.path.join(args.output, 'log.txt'),
+                        filename=os.path.join(args.result_dir, 'log.txt'),
                         filemode='w')
     # Define a new Handler to log to console as well
     console = logging.StreamHandler()
