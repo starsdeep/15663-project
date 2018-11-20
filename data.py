@@ -57,18 +57,25 @@ class SonyDataset(Dataset):
 
         if self.input_images[str(ratio)[0:3]][ind] is None:
             raw = rawpy.imread(in_path)
-            self.input_images[str(ratio)[0:3]][ind] = np.expand_dims(pack_raw(raw), axis=0) * ratio
+            raw = pack_raw(raw) * ratio
+            # convert (H,W,C) to (C,H,W)
+            self.input_images[str(ratio)[0:3]][ind] = np.transpose(raw, (2, 1, 0))
+
+
+        if self.gt_images[ind] is None:
             gt_raw = rawpy.imread(gt_path)
             im = gt_raw.postprocess(use_camera_wb=True, half_size=False, no_auto_bright=True, output_bps=16)
-            self.gt_images[ind] = np.expand_dims(np.float32(im / 65535.0), axis=0)
+            im = np.float32(im / 65535.0)
+            # convert (H,W,C) to (C,H,W)
+            self.gt_images[ind] = np.transpose(im, (2, 1, 0))
 
         # crop
-        H = self.input_images[str(ratio)[0:3]][ind].shape[1]
-        W = self.input_images[str(ratio)[0:3]][ind].shape[2]
+        H = self.input_images[str(ratio)[0:3]][ind].shape[0]
+        W = self.input_images[str(ratio)[0:3]][ind].shape[1]
         xx = np.random.randint(0, W - self.ps)
         yy = np.random.randint(0, H - self.ps)
-        input_patch = self.input_images[str(ratio)[0:3]][ind][:, yy:yy + self.ps, xx:xx + self.ps, :]
-        gt_patch = self.gt_images[ind][:, yy * 2:yy * 2 + self.ps * 2, xx * 2:xx * 2 + self.ps * 2, :]
+        input_patch = self.input_images[str(ratio)[0:3]][ind][:, yy:yy + self.ps, xx:xx + self.ps]
+        gt_patch = self.gt_images[ind][:, yy * 2:yy * 2 + self.ps * 2, xx * 2:xx * 2 + self.ps * 2]
 
         # data augmentation
         # random flip vertically
@@ -81,20 +88,12 @@ class SonyDataset(Dataset):
             gt_patch = np.flip(gt_patch, axis=2).copy()
         # random transpose
         if np.random.randint(2, size=1)[0] == 1:
-            input_patch = np.transpose(input_patch, (0, 2, 1, 3)).copy()
-            gt_patch = np.transpose(gt_patch, (0, 2, 1, 3)).copy()
+            input_patch = np.transpose(input_patch, (0, 2, 1)).copy()
+            gt_patch = np.transpose(gt_patch, (0, 2, 1)).copy()
 
         input_patch = np.minimum(input_patch, 1.0)
 
-        input_patch = torch.from_numpy(input_patch)
-        input_patch = torch.squeeze(input_patch)
-        input_patch = input_patch.permute(2, 0 ,1)
-        
-        gt_patch = torch.from_numpy(gt_patch)
-        gt_patch = torch.squeeze(gt_patch)
-        gt_patch = gt_patch.permute(2, 0, 1)
-        
-        return input_patch, gt_patch, train_id, ratio
+        return torch.from_numpy(input_patch), torch.from_numpy(gt_patch), train_id, ratio
 
 
 
