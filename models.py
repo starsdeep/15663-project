@@ -46,13 +46,13 @@ class Up(nn.Module):
         return x
 
 
-class outconv(nn.Module):
+class OutConv(nn.Module):
     def __init__(self, in_ch, out_ch):
-        super(outconv, self).__init__()
-        self.conv = nn.Conv2d(in_ch, out_ch, 1)
+        super(OutConv, self).__init__()
+        self.f = nn.Conv2d(in_ch, out_ch, 1)
 
     def forward(self, x):
-        x = self.conv(x)
+        x = self.f(x)
         return x
 
 
@@ -90,7 +90,7 @@ class Unet(nn.Module):
         self.u2 = Up(256, 128)
         self.u3 = Up(128, 64)
         self.u4 = Up(64, 32)
-        self.outc = outconv(32, 12)
+        self.outc = OutConv(32, 12)
         self.d2s = DepthToSpace(2)
 
     def forward(self, x):
@@ -105,5 +105,6 @@ class Unet(nn.Module):
         x = self.u4(x, x1)
         x = self.outc(x)
         x = self.d2s(x)
+        x = torch.sigmoid(x)
 
         return x

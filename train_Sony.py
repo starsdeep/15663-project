@@ -14,20 +14,21 @@ import torch.optim as optim
 from models import Unet
 from datetime import datetime
 
+
 def train(args):
     # device
     device = torch.device("cuda:%d" % args.gpu if torch.cuda.is_available() else "cpu")
 
     # data
     trainset = SonyDataset(args.input_dir, args.gt_dir, args.ps)
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=20)
+    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=12, pin_memory=True)
     logging.info("data loading okay")
 
     # model
     model = Unet().to(device)
 
     # loss function
-    criterion = nn.L1Loss(reduction='elementwise_mean')
+    criterion = nn.L1Loss()
 
     # optimizer
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
@@ -55,7 +56,7 @@ def train(args):
 
             # print statistics
             running_loss += loss.item()
-            if i % args.log_interval == (args.log_interval - 1):  # print every 2000 mini-batches
+            if i % args.log_interval == (args.log_interval - 1):
                 print('[%d, %5d] loss: %.3f %s' %
                       (epoch, i, running_loss / args.log_interval, datetime.now()))
                 running_loss = 0.0
@@ -74,7 +75,8 @@ def train(args):
                     args.result_dir + '%04d/%05d_00_train_%d.jpg' % (epoch, train_id[0], ratio[0]))
 
         # at the end of epoch
-        torch.save(model.state_dict(), args.checkpoint_dir + './model_%d.pl' % epoch)
+        if epoch % args.model_save_freq == 0:
+            torch.save(model.state_dict(), args.checkpoint_dir + './model_%d.pl' % epoch)
 
 
 if __name__ == '__main__':
@@ -92,6 +94,7 @@ if __name__ == '__main__':
     parser.add_argument('--wd', type=float, default=0)
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_epoch', type=int, default=4000)
+    parser.add_argument('--model_save_freq', type=int, default=1)
 
     args = parser.parse_args()
 

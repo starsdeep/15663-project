@@ -5,6 +5,7 @@ import numpy as np
 import glob
 import rawpy
 
+
 def pack_raw(raw):
     # pack Bayer image to 4 channels
     im = raw.raw_image_visible.astype(np.float32)
@@ -21,6 +22,7 @@ def pack_raw(raw):
                           im[1:H:2, 0:W:2, :]), axis=2)
     return out
 
+
 class SonyDataset(Dataset):
 
     def __init__(self, input_dir, gt_dir, ps=512):
@@ -33,7 +35,7 @@ class SonyDataset(Dataset):
 
         # Raw data takes long time to load. Keep them in memory after loaded.
         self.gt_images = [None] * 6000
-        self.input_images = {}
+        self.input_images = dict()
         self.input_images['300'] = [None] * len(self.train_ids)
         self.input_images['250'] = [None] * len(self.train_ids)
         self.input_images['100'] = [None] * len(self.train_ids)
@@ -88,33 +90,10 @@ class SonyDataset(Dataset):
 
         input_patch = torch.from_numpy(input_patch)
         input_patch = torch.squeeze(input_patch)
-        input_patch = input_patch.permute(2, 0 ,1)
+        input_patch = input_patch.permute(2, 0, 1)
         
         gt_patch = torch.from_numpy(gt_patch)
         gt_patch = torch.squeeze(gt_patch)
         gt_patch = gt_patch.permute(2, 0, 1)
         
         return input_patch, gt_patch, train_id, ratio
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
