@@ -72,8 +72,8 @@ class SonyDataset(Dataset):
             self.gt_images[ind] = np.transpose(im, (2, 1, 0))
 
         # crop
-        H = self.input_images[str(ratio)[0:3]][ind].shape[0]
-        W = self.input_images[str(ratio)[0:3]][ind].shape[1]
+        H = self.input_images[str(ratio)[0:3]][ind].shape[1]
+        W = self.input_images[str(ratio)[0:3]][ind].shape[2]
         xx = np.random.randint(0, W - self.ps)
         yy = np.random.randint(0, H - self.ps)
         input_patch = self.input_images[str(ratio)[0:3]][ind][:, yy:yy + self.ps, xx:xx + self.ps]
