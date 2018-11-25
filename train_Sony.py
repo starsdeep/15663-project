@@ -62,15 +62,15 @@ def train(args):
                 running_loss = 0.0
 
             if epoch % args.save_freq == 0:
-                if not os.path.isdir(args.result_dir + '%04d' % epoch):
-                    os.makedirs(args.result_dir + '%04d' % epoch)
+                if not os.path.isdir(os.path.join(args.result_dir, '%04d' % epoch)):
+                    os.makedirs(os.path.join(args.result_dir, '%04d' % epoch))
                 
                 gt_patch = gt_patch.cpu().detach().numpy()
                 outputs = outputs.cpu().detach().numpy()
                 train_id = train_id.numpy()
                 ratio = ratio.numpy()
 
-                temp = np.concatenate((gt_patch[0, :, :, :], outputs[0, :, :, :]), axis=1)
+                temp = np.concatenate((gt_patch[0, :, :, :], outputs[0, :, :, :]), axis=2)
                 scipy.misc.toimage(temp * 255, high=255, low=0, cmin=0, cmax=255).save(
                     args.result_dir + '%04d/%05d_00_train_%d.jpg' % (epoch, train_id[0], ratio[0]))
 
