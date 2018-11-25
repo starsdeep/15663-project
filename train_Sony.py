@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.optim as optim
 from models import Unet
 from datetime import datetime
-
+from GradLoss import GradLoss
 
 def train(args):
     # device
@@ -21,20 +21,21 @@ def train(args):
 
     # data
     trainset = SonyDataset(args.input_dir, args.gt_dir, args.ps)
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=12, pin_memory=True)
+    train_loader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=12)
     logging.info("data loading okay")
 
     # model
     model = Unet().to(device)
 
     # loss function
-    criterion = nn.L1Loss()
+    color_loss = nn.L1Loss()
+    gradient_loss = GradLoss(device)
 
     # optimizer
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
 
     # lr scheduler
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.1)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.1)
 
     # training
     running_loss = 0.0
@@ -50,7 +51,7 @@ def train(args):
 
             # forward + backward + optimize
             outputs = model(input_patch)
-            loss = criterion(outputs, gt_patch)
+            loss = color_loss(outputs, gt_patch) + gradient_loss(outputs, gt_patch)
             loss.backward()
             optimizer.step()
 
@@ -93,7 +94,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--wd', type=float, default=0)
     parser.add_argument('--batch_size', type=int, default=1)
-    parser.add_argument('--num_epoch', type=int, default=4000)
+    parser.add_argument('--num_epoch', type=int, default=2000)
     parser.add_argument('--model_save_freq', type=int, default=1)
 
     args = parser.parse_args()

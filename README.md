@@ -9,10 +9,13 @@ In this project, we aim to implement a learning-based method for recovering imag
 * PyTorch 0.4.1
 
 ## Training
+```
 python train_Sony.py
+```
 
 ## Testing
+```
 python test_Sony.py
-
+```
 ## License
 MIT license
