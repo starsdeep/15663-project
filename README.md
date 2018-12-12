@@ -10,12 +10,17 @@ In this project, we aim to implement a learning-based method for recovering imag
 
 ## Training
 ```
-python train_Sony.py
+python train_Sony.py --gpu 0
 ```
 
-## Testing
+## Processing test images
 ```
-python test_Sony.py
+python test_Sony.py --model ./model.pl --gpu 0
+```
+
+## Calculate metrics
+```
+python metrics.py --imgdir ./eval
 ```
 ## License
 MIT license

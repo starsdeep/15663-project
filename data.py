@@ -138,7 +138,8 @@ class SonyTestDataset(Dataset):
         im = gt_raw.postprocess(use_camera_wb=True, half_size=False, no_auto_bright=True, output_bps=16)
         gt_full = np.expand_dims(np.float32(im / 65535.0), axis=0)
 
-        # convert to tensor
+        # clipping, convert to tensor
+        input_full = np.minimum(input_full, 1.0)
         input_full = torch.from_numpy(input_full)
         input_full = torch.squeeze(input_full)
         input_full = input_full.permute(2, 0, 1)
