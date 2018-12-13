@@ -22,5 +22,14 @@ python test_Sony.py --model ./model.pl --gpu 0
 ```
 python metrics.py --imgdir ./eval
 ```
+
+## Benchmarks
+
+|       | PSNR   | SSIM  |
+|:------|:------:|:-----:|
+| BM3D  |        |       |
+| CChen | 28.575 | 0.815 |
+| Ours  | 28.642 | 0.815 |
+
 ## License
 MIT license
