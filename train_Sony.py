@@ -27,6 +27,14 @@ def train(args):
     # model
     model = Unet().to(device)
 
+    # resume
+    starting_epoch = 0
+    if args.resume is not None:
+        model.load_state_dict(torch.load(args.resume))
+        starting_epoch = int(args.resume[-7:-3])
+        print('resume at %d epoch' % starting_epoch)
+
+
     # loss function
     color_loss = nn.L1Loss()
     gradient_loss = GradLoss(device)
@@ -39,7 +47,7 @@ def train(args):
 
     # training
     running_loss = 0.0
-    for epoch in range(args.num_epoch):
+    for epoch in range(starting_epoch+1, starting_epoch + args.num_epoch):
         scheduler.step()
         for i, databatch in enumerate(train_loader):
             # get the inputs
@@ -86,8 +94,8 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--input_dir', type=str, default='./dataset/Sony/short/')
     parser.add_argument('--gt_dir', type=str, default='./dataset/Sony/long/')
-    parser.add_argument('--checkpoint_dir', type=str, default='./result_Sony/')
-    parser.add_argument('--result_dir', type=str, default='./result_Sony/')
+    parser.add_argument('--checkpoint_dir', type=str, default='./result_grad_loss/')
+    parser.add_argument('--result_dir', type=str, default='./result_grad_loss/')
     parser.add_argument('--ps', type=int, default=512)
     parser.add_argument('--log_interval', type=int, default=10)
     parser.add_argument('--save_freq', type=int, default=500)
@@ -96,7 +104,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_epoch', type=int, default=2000)
     parser.add_argument('--model_save_freq', type=int, default=1)
-
+    parser.add_argument('--resume', type=str, help='continue training')
     args = parser.parse_args()
 
     # Create Output Dir
