@@ -6,7 +6,7 @@ In this project, we aim to implement a learning-based method for recovering imag
 
 ## environment
 * Python 3.6.0
-* PyTorch 0.4.1
+* PyTorch 1.0
 
 ## Training
 ```
@@ -28,6 +28,7 @@ python metrics.py --imgdir ./eval
 |       | PSNR   | SSIM  |
 |:------|:------:|:-----:|
 | BM3D  |        |       |
+| NIMean| 16.212 | 0.225 |
 | CChen | 28.575 | 0.815 |
 | Ours  | 28.642 | 0.815 |
 
